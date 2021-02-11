@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdint.h>
+#include "aes.h"
 
 #ifdef __GNUC__
 #define likely(cond) __builtin_expect(!!(cond),1)
@@ -15,7 +16,13 @@
 int encrypt(FILE *input, FILE *output, const unsigned int buffer_size) {
     unsigned int sz = buffer_size;
     uint8_t *data;
+    struct AES_ctx ctx;
 
+    /* FIXME: key is not random */
+    uint8_t key[16] = {1};
+    uint8_t iv [16] = {2};
+    AES_init_ctx_iv(&ctx, key, iv);
+    
     data = malloc(buffer_size);
     if (data == NULL) {
         if (buffer_size == 0)
@@ -26,7 +33,8 @@ int encrypt(FILE *input, FILE *output, const unsigned int buffer_size) {
     }
     while (likely(sz == buffer_size)) {
         sz = fread(data, sizeof(char), buffer_size, input);
-        
+        memset(&data[sz], 0, buffer_size - sz);
+        AES_CBC_encrypt_buffer(&ctx, data, buffer_size);
         fwrite(data, sizeof(char), buffer_size, output);
     }
     memset(&data[sz], 0, buffer_size - sz);

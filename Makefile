@@ -1,10 +1,10 @@
 all: main
 
 main:
-	$(CC) src/* -o main -O2 -ansi
+	$(CC) src/*.c -o main -O2
 
 asan:
-	$(CC) src/* -o main -O2 -ansi -fsanitize=address
+	$(CC) src/*.c -o main -O2 -fsanitize=address
 
 clean:
 	rm main -f
