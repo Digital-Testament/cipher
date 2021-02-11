@@ -13,7 +13,7 @@
 #endif
 
 int encrypt(FILE *input, FILE *output, const unsigned int buffer_size) {
-    unsigned int sz;
+    unsigned int sz = buffer_size;
     uint8_t *data;
 
     data = malloc(buffer_size);
@@ -24,15 +24,12 @@ int encrypt(FILE *input, FILE *output, const unsigned int buffer_size) {
             fputs("Error: could not allocate memory\n", stderr);
         return 1;
     }
-    while (1) {
+    while (likely(sz == buffer_size)) {
         sz = fread(data, sizeof(char), buffer_size, input);
-        memset(&data[sz], 0, buffer_size - sz);
-        if (fwrite(data, sizeof(char), buffer_size, output) != buffer_size) {
-            perror("Error writing data");
-            return 1;
-        }
-        if (sz != buffer_size) break;
+        
+        fwrite(data, sizeof(char), buffer_size, output);
     }
+    memset(&data[sz], 0, buffer_size - sz);
     free(data);
     return 0;
 }
@@ -55,7 +52,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    exit = encrypt(fpi, fpo, 2);
+    exit = encrypt(fpi, fpo, 1024);
     
     fclose(fpi);
     fclose(fpo);
